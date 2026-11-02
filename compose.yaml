@@ -1,0 +1,31 @@
+services:
+  tailscale-exit:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: home-tailscale-exit:local
+    container_name: ts-egress-isolated
+    hostname: home-vpn-exit
+    # Reuse Docker's existing bridge; don't share the host network namespace.
+    network_mode: bridge
+    environment:
+      TS_AUTHKEY: ${TS_AUTHKEY:?Create a Tailscale auth key and set TS_AUTHKEY}
+      TS_STATE_DIR: /var/lib/tailscale
+      TS_AUTH_ONCE: "true"
+      TS_USERSPACE: "false"
+      TS_ACCEPT_DNS: "false"
+      TS_EXTRA_ARGS: --advertise-exit-node
+    volumes:
+      - tailscale-state:/var/lib/tailscale
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    sysctls:
+      net.ipv4.ip_forward: "1"
+      net.ipv6.conf.all.forwarding: "1"
+    restart: unless-stopped
+
+volumes:
+  tailscale-state:

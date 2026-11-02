@@ -1,0 +1,66 @@
+{
+  "log": {
+    "level": "info"
+  },
+  "dns": {
+    "servers": [
+      {
+        "type": "local",
+        "tag": "dns-direct"
+      }
+    ],
+    "final": "dns-direct"
+  },
+  "inbounds": [
+    {
+      "type": "tun",
+      "tag": "tun-in",
+      "address": [
+        "172.19.0.1/30",
+        "fdfe:dcba:9876::1/126"
+      ],
+      "auto_route": true,
+      "exclude_package": [
+        "io.nekohasekai.sfa",
+        "com.android.chrome",
+        "org.mozilla.firefox"
+      ]
+    }
+  ],
+  "endpoints": [
+    {
+      "type": "tailscale",
+      "tag": "home-exit",
+      "state_directory": "tailscale-split-state",
+      "exit_node": "home-vpn-exit"
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "direct",
+      "tag": "direct"
+    }
+  ],
+  "route": {
+    "default_domain_resolver": "dns-direct",
+    "rules": [
+      {
+        "action": "sniff"
+      },
+      {
+        "protocol": "dns",
+        "action": "hijack-dns"
+      },
+      {
+        "package_name": [
+          "com.openai.chatgpt",
+          "org.telegram.messenger",
+          "org.telegram.messenger.web"
+        ],
+        "action": "route",
+        "outbound": "home-exit"
+      }
+    ],
+    "final": "direct"
+  }
+}
