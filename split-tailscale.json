@@ -1,29 +1,41 @@
 {
   "log": {
-    "level": "info"
+    "level": "debug"
   },
   "dns": {
     "servers": [
       {
         "type": "local",
-        "tag": "dns-direct"
+        "tag": "dns-control"
+      },
+      {
+        "type": "https",
+        "tag": "dns-via-vpn",
+        "server": "1.1.1.1",
+        "path": "/dns-query",
+        "tls": {
+          "enabled": true
+        },
+        "detour": "home-exit"
       }
     ],
-    "final": "dns-direct"
+    "strategy": "ipv4_only",
+    "final": "dns-via-vpn"
   },
   "inbounds": [
     {
       "type": "tun",
       "tag": "tun-in",
       "address": [
-        "172.19.0.1/30",
-        "fdfe:dcba:9876::1/126"
+        "172.19.0.1/30"
       ],
       "auto_route": true,
-      "exclude_package": [
-        "io.nekohasekai.sfa",
-        "com.android.chrome",
-        "org.mozilla.firefox"
+      "stack": "gvisor",
+      "mtu": 1280,
+      "include_package": [
+        "com.openai.chatgpt",
+        "org.telegram.messenger",
+        "org.telegram.messenger.web"
       ]
     }
   ],
@@ -42,25 +54,13 @@
     }
   ],
   "route": {
-    "default_domain_resolver": "dns-direct",
+    "default_domain_resolver": "dns-control",
     "rules": [
-      {
-        "action": "sniff"
-      },
       {
         "protocol": "dns",
         "action": "hijack-dns"
-      },
-      {
-        "package_name": [
-          "com.openai.chatgpt",
-          "org.telegram.messenger",
-          "org.telegram.messenger.web"
-        ],
-        "action": "route",
-        "outbound": "home-exit"
       }
     ],
-    "final": "direct"
+    "final": "home-exit"
   }
 }
