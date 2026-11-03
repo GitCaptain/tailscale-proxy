@@ -7,20 +7,10 @@
       {
         "type": "local",
         "tag": "dns-control"
-      },
-      {
-        "type": "https",
-        "tag": "dns-via-vpn",
-        "server": "1.1.1.1",
-        "path": "/dns-query",
-        "tls": {
-          "enabled": true
-        },
-        "detour": "home-exit"
       }
     ],
     "strategy": "ipv4_only",
-    "final": "dns-via-vpn"
+    "final": "dns-control"
   },
   "inbounds": [
     {
@@ -44,7 +34,8 @@
       "type": "tailscale",
       "tag": "home-exit",
       "state_directory": "tailscale-split-state",
-      "exit_node": "home-vpn-exit"
+      "exit_node": "home-vpn-exit",
+      "domain_resolver": "dns-control"
     }
   ],
   "outbounds": [
