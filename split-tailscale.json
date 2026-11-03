@@ -27,6 +27,12 @@
         "org.telegram.messenger",
         "org.telegram.messenger.web"
       ]
+    },
+    {
+      "type": "socks",
+      "tag": "ts-bootstrap-in",
+      "listen": "127.0.0.1",
+      "listen_port": 19321
     }
   ],
   "endpoints": [
@@ -35,18 +41,45 @@
       "tag": "home-exit",
       "state_directory": "tailscale-split-state",
       "exit_node": "home-vpn-exit",
-      "domain_resolver": "dns-control"
+      "detour": "ts-bootstrap-out"
     }
   ],
   "outbounds": [
     {
       "type": "direct",
       "tag": "direct"
+    },
+    {
+      "type": "socks",
+      "tag": "ts-bootstrap-out",
+      "server": "127.0.0.1",
+      "server_port": 19321,
+      "version": "5"
     }
   ],
   "route": {
     "default_domain_resolver": "dns-control",
     "rules": [
+      {
+        "inbound": [
+          "ts-bootstrap-in"
+        ],
+        "network": [
+          "tcp"
+        ],
+        "port": [
+          80
+        ],
+        "action": "reject",
+        "no_drop": true
+      },
+      {
+        "inbound": [
+          "ts-bootstrap-in"
+        ],
+        "action": "route",
+        "outbound": "direct"
+      },
       {
         "protocol": "dns",
         "action": "hijack-dns"
